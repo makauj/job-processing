@@ -1,0 +1,275 @@
+# Job Processing
+
+This is a personal project meant to showcase my programming skills. I am building a job processing web app that takes in tasks and processes them.
+
+## How I am building the project
+
+Below is a structured build plan for a **job processing platform** designed to demonstrate backend depth using Python. The emphasis is on clean architecture, asynchronous processing, and production-ready practices.
+
+---
+
+### Tech Stack (deliberate choices)
+
+* API framework: FastAPI
+* Task queue: Celery
+* Broker / cache: Redis
+* Database: PostgreSQL
+* ORM: SQLAlchemy (or SQLModel for tighter FastAPI integration)
+* Containerization: Docker
+* API docs: OpenAPI (auto via FastAPI)
+
+Optional but valuable:
+
+* Auth: JWT (via python-jose)
+* Background scheduler: Celery Beat
+* Monitoring: Flower (Celery dashboard)
+
+---
+
+### Core Features (scope definition)
+
+You are building a system that:
+
+* Accepts jobs (via API)
+* Queues them
+* Processes asynchronously
+* Tracks status/results
+* Retries failures
+* Supports multiple job types
+
+Example job types:
+
+* Image resize
+* Email sending
+* Data report generation
+
+---
+
+### High-Level Architecture
+
+Client → FastAPI → PostgreSQL (job metadata)
+→ Redis (queue broker) → Celery Workers → Results stored back in DB
+
+---
+
+### Step-by-Step Build Plan
+
+#### Step 1 - Project Setup
+
+* Create repo and virtual environment
+
+* Install dependencies:
+
+  * fastapi, uvicorn
+  * celery, redis
+  * sqlalchemy, psycopg2
+  * pydantic
+
+* Initialize Git with a clean README
+
+---
+
+#### Step 2 - Database Design
+
+Create a `jobs` table:
+
+Fields:
+
+* id (UUID)
+* type (string)
+* status (pending, running, success, failed)
+* payload (JSON)
+* result (JSON)
+* retries (int)
+* created_at, updated_at
+
+Set up migrations (Alembic recommended).
+
+---
+
+#### Step 3 - Basic FastAPI App
+
+Implement:
+
+* POST `/jobs` → submit a job
+* GET `/jobs/{id}` → check status
+* GET `/jobs` → list jobs (pagination)
+
+At this stage:
+
+* Store jobs in DB
+* Return mock responses (no Celery yet)
+
+---
+
+#### Step 4 - Integrate Celery
+
+* Configure Celery with Redis broker
+* Create a worker service
+
+Define tasks:
+
+* `process_image`
+* `send_email`
+* `generate_report`
+
+Modify job creation:
+
+* When job is created → enqueue Celery task
+* Store Celery task ID in DB
+
+---
+
+#### Step 5 - Worker Logic
+
+Each task should:
+
+* Update job status → running
+* Execute logic
+* Save result → success
+* Handle exceptions → failed
+* Increment retries if needed
+
+---
+
+#### Step 6 - Status Synchronization
+
+Ensure:
+
+* Worker updates DB directly OR
+* Use Celery signals to track task lifecycle
+
+Add retry logic:
+
+* Automatic retries (Celery config)
+* Backoff strategy
+
+---
+
+#### Step 7 - Add Authentication
+
+* JWT-based auth
+* Protect endpoints
+* Associate jobs with users
+
+---
+
+#### Step 8 - Add Caching Layer
+
+Use Redis for:
+
+* Frequently requested job results
+* Rate limiting
+
+---
+
+#### Step 9 - Add Observability
+
+* Logging (structured logs)
+* Add Flower for monitoring Celery tasks
+* Track failures and durations
+
+---
+
+#### Step 10 - Dockerize the System
+
+Create services:
+
+* api
+* worker
+* redis
+* postgres
+
+Use docker-compose to run everything together.
+
+---
+
+#### Step 11 - Testing
+
+* Unit tests for services
+* Integration tests for API + queue
+* Mock Celery where needed
+
+---
+
+#### Step 12 - Deployment
+
+Deploy to a cloud platform:
+
+* Single VM (simplest) OR
+* Managed services (advanced)
+
+Expose:
+
+* API endpoint
+* Optional monitoring dashboard
+
+---
+
+### Recommended Folder Structure
+
+Keep it modular and production-like:
+
+```bash
+        job-platform/
+        │
+        ├── app/
+        │   ├── main.py              # FastAPI entrypoint
+        │   ├── api/                 # Routes
+        │   │   ├── routes_jobs.py
+        │   │   └── deps.py
+        │   │
+        │   ├── core/                # Config, settings
+        │   │   ├── config.py
+        │   │   └── security.py
+        │   │
+        │   ├── models/              # SQLAlchemy models
+        │   │   └── job.py
+        │   │
+        │   ├── schemas/             # Pydantic schemas
+        │   │   └── job.py
+        │   │
+        │   ├── services/            # Business logic
+        │   │   └── job_service.py
+        │   │
+        │   ├── db/                  # DB connection/session
+        │   │   ├── base.py
+        │   │   └── session.py
+        │   │
+        │   └── workers/             # Celery tasks
+        │       ├── celery_app.py
+        │       └── tasks.py
+        │
+        ├── tests/
+        │
+        ├── docker/
+        │   ├── Dockerfile.api
+        │   ├── Dockerfile.worker
+        │   └── docker-compose.yml
+        │
+        ├── alembic/                 # migrations
+        │
+        ├── requirements.txt
+        └── README.md
+```
+
+---
+
+### What Makes This CV-Strong
+
+This project signals:
+
+* Understanding of async systems (queues, workers)
+* Real-world backend patterns (retry, failure handling)
+* Clean architecture (separation of concerns)
+* Deployment knowledge (Dockerized services)
+
+---
+
+### Optional Enhancements (High Impact)
+
+* Priority queues (high vs low jobs)
+* Scheduled jobs (Celery Beat)
+* WebSocket updates for live status
+* Multi-tenant support
+* File upload handling (S3 or local storage)
