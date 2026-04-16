@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.services import job_service
+from app.services import user_service
 from app.db.session import get_db
 from app.models.jobs import JobStatus
+from app.schema.users import UserCreate, UserLogin
 from sqlalchemy.orm import Session
 
 
@@ -44,28 +46,63 @@ def update_job_status(job_id: int, status: str, db: Session = Depends(get_db)):
     job_service.update_job_status(db, job_id, parsed_status)
     return {"message": f"Job {job_id} status updated to {status}!"}
 
-@router.post("/users/", status_code=202)
-def create_user_route(username: str, email: str):
-    from app.workers.celery_app import celery_app
+@router.post("/users/", status_code=201)
+def create_user_route(payload: UserCreate, db: Session = Depends(get_db)):
+    try:
+        user = user_service.create_user(
+            db,
+            username=payload.username,
+            password=payload.password,
+            email=payload.email,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
-    celery_app.send_task("app.workers.create_user", args=[username, email])
-    return {"message": f"User creation for {username} has been queued!"}
+    return {
+        "id": user.id,
+        "username": user.name,
+        "email": user.email,
+        "created_at": user.created_at,
+    }
+
+@router.post("/login")
+def login_route(payload: UserLogin, db: Session = Depends(get_db)):
+    user = user_service.authenticate_user(db, payload.username, payload.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+
+    return {
+        "message": "Login successful",
+        "user": {
+            "id": user.id,
+            "username": user.name,
+            "email": user.email,
+        },
+    }
 
 @router.get("/users/{user_name}")
-def get_user_route(user_name: str):
-    from app.workers.celery_app import celery_app
-
-    result = celery_app.send_task("app.workers.get_user", args=[user_name])
-    user_data = result.get(timeout=10)  # Wait for the result with a timeout
-    if user_data is None:
+def get_user_route(user_name: str, db: Session = Depends(get_db)):
+    user = user_service.get_user_by_username(db, user_name)
+    if user is None:
         raise HTTPException(status_code=404, detail=f"User {user_name} not found")
-    return user_data
+
+    return {
+        "id": user.id,
+        "username": user.name,
+        "email": user.email,
+        "created_at": user.created_at,
+    }
 
 @router.delete("/jobs/{job_id}")
 def delete_job(job_id: int, db: Session = Depends(get_db)):
-    job = job_service.get_job(db, job_id)
-    if not job:
+    deleted = job_service.delete_job(db, job_id)
+    if not deleted:
         raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
-    db.delete(job)
-    db.commit()
     return {"message": f"Job {job_id} deleted successfully!"}
+
+@router.delete("/users/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    deleted = job_service.delete_user(db, user_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found")
+    return {"message": f"User {user_id} deleted successfully!"}

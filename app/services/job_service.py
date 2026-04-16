@@ -81,3 +81,8 @@ def delete_job(db: Session, job_id: int) -> bool:
         db.commit()
         return True
     return False
+
+def delete_user(db: Session, user_id: int) -> bool:
+    from app.services.user_service import delete_user as delete_user_service
+    delete_user_service(db, user_id)
+    return True
