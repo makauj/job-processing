@@ -70,3 +70,14 @@ def mark_job_failed(db: Session, job_id: int, error: str) -> Job | None:
 
 def mark_job_completed(db: Session, job_id: int, result: dict[str, Any]) -> Job | None:
     return update_job_status(db, job_id, JobStatus.COMPLETED, result=result)
+
+def reset_job(db: Session, job_id: int) -> Job | None:
+    return update_job_status(db, job_id, JobStatus.PENDING, result=None, error=None)
+
+def delete_job(db: Session, job_id: int) -> bool:
+    job = get_job(db, job_id)
+    if job:
+        db.delete(job)
+        db.commit()
+        return True
+    return False

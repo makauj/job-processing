@@ -11,6 +11,7 @@ class User(Base):
     name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    password_hash = Column(String, nullable=False, default="hashed_password_placeholder")
     
     def __repr__(self):
         return f"<User(id={self.id}, name='{self.name}', email='{self.email}')>"

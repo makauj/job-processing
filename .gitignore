@@ -9,3 +9,8 @@ venv/
 dist/
 build/
 .DS_Store
+tests/__pycache__/
+tests/.pytest_cache/
+test.db
+test*
+*test

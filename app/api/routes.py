@@ -50,3 +50,22 @@ def create_user_route(username: str, email: str):
 
     celery_app.send_task("app.workers.create_user", args=[username, email])
     return {"message": f"User creation for {username} has been queued!"}
+
+@router.get("/users/{user_name}")
+def get_user_route(user_name: str):
+    from app.workers.celery_app import celery_app
+
+    result = celery_app.send_task("app.workers.get_user", args=[user_name])
+    user_data = result.get(timeout=10)  # Wait for the result with a timeout
+    if user_data is None:
+        raise HTTPException(status_code=404, detail=f"User {user_name} not found")
+    return user_data
+
+@router.delete("/jobs/{job_id}")
+def delete_job(job_id: int, db: Session = Depends(get_db)):
+    job = job_service.get_job(db, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    db.delete(job)
+    db.commit()
+    return {"message": f"Job {job_id} deleted successfully!"}
