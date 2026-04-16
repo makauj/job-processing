@@ -2,6 +2,48 @@
 
 This is a personal project meant to showcase my programming skills. I am building a job processing web app that takes in tasks and processes them.
 
+## Run API + Celery Worker (local)
+
+1. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+2. Start Redis (required by Celery broker):
+
+```bash
+docker run --name job-processing-redis -p 6379:6379 redis:7
+```
+
+3. Optional environment variables:
+
+```bash
+# Defaults to sqlite:///./job_processing.db
+DATABASE_URL=sqlite:///./job_processing.db
+
+# Defaults to redis://localhost:6379/0
+CELERY_BROKER_URL=redis://localhost:6379/0
+```
+
+4. Start FastAPI:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+5. Start Celery worker (separate terminal):
+
+```bash
+celery -A app.workers.celery_app:celery_app worker --loglevel=info
+```
+
+6. Queue a user creation task:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/users/?username=alice&email=alice@example.com"
+```
+
 ## How I am building the project
 
 Below is a structured build plan for a **job processing platform** designed to demonstrate backend depth using Python. The emphasis is on clean architecture, asynchronous processing, and production-ready practices.
