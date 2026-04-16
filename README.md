@@ -2,6 +2,56 @@
 
 This is a personal project meant to showcase my programming skills. I am building a job processing web app that takes in tasks and processes them.
 
+## How I am building the project
+
+Below is a structured build plan for a **job processing platform** designed to demonstrate backend depth using Python. The emphasis is on clean architecture, asynchronous processing, and production-ready practices.
+
+---
+
+### Tech Stack
+
+* API framework: FastAPI
+* Task queue: Celery
+* Broker / cache: Redis
+* Database: PostgreSQL
+* ORM: SQLAlchemy (or SQLModel for tighter FastAPI integration)
+* Containerization: Docker
+* API docs: OpenAPI (auto via FastAPI)
+
+Optional but valuable:
+
+* Auth: JWT (via python-jose)
+* Background scheduler: Celery Beat
+* Monitoring: Flower (Celery dashboard)
+
+---
+
+### Core Features
+
+I am building a system that:
+
+* Accepts jobs (via API)
+* Queues them
+* Processes asynchronously
+* Tracks status/results
+* Retries failures
+* Supports multiple job types
+
+Example job types:
+
+* Image resize
+* Email sending
+* Data report generation
+
+---
+
+### High-Level Architecture
+
+Client → FastAPI → PostgreSQL (job metadata)
+→ Redis (queue broker) → Celery Workers → Results stored back in DB
+
+---
+
 ## Run API + Celery Worker (local)
 
 1. Install dependencies:
@@ -71,59 +121,9 @@ Overall progress against the 12-step plan: about 45% complete.
 * Local startup flow for API + Redis + Celery worker.
 * Basic test coverage for queue dispatch.
 
-## How I am building the project
+## Step-by-Step Build Plan
 
-Below is a structured build plan for a **job processing platform** designed to demonstrate backend depth using Python. The emphasis is on clean architecture, asynchronous processing, and production-ready practices.
-
----
-
-### Tech Stack (deliberate choices)
-
-* API framework: FastAPI
-* Task queue: Celery
-* Broker / cache: Redis
-* Database: PostgreSQL
-* ORM: SQLAlchemy (or SQLModel for tighter FastAPI integration)
-* Containerization: Docker
-* API docs: OpenAPI (auto via FastAPI)
-
-Optional but valuable:
-
-* Auth: JWT (via python-jose)
-* Background scheduler: Celery Beat
-* Monitoring: Flower (Celery dashboard)
-
----
-
-### Core Features (scope definition)
-
-You are building a system that:
-
-* Accepts jobs (via API)
-* Queues them
-* Processes asynchronously
-* Tracks status/results
-* Retries failures
-* Supports multiple job types
-
-Example job types:
-
-* Image resize
-* Email sending
-* Data report generation
-
----
-
-### High-Level Architecture
-
-Client → FastAPI → PostgreSQL (job metadata)
-→ Redis (queue broker) → Celery Workers → Results stored back in DB
-
----
-
-### Step-by-Step Build Plan
-
-#### Step 1 - Project Setup
+### Step 1 - Project Setup
 
 * Create repo and virtual environment
 
@@ -138,7 +138,7 @@ Client → FastAPI → PostgreSQL (job metadata)
 
 ---
 
-#### Step 2 - Database Design
+### Step 2 - Database Design
 
 Create a `jobs` table:
 
@@ -156,7 +156,7 @@ Set up migrations (Alembic recommended).
 
 ---
 
-#### Step 3 - Basic FastAPI App
+### Step 3 - Basic FastAPI App
 
 Implement:
 
@@ -171,7 +171,7 @@ At this stage:
 
 ---
 
-#### Step 4 - Integrate Celery
+### Step 4 - Integrate Celery
 
 * Configure Celery with Redis broker
 * Create a worker service
@@ -189,7 +189,7 @@ Modify job creation:
 
 ---
 
-#### Step 5 - Worker Logic
+### Step 5 - Worker Logic
 
 Each task should:
 
@@ -201,7 +201,7 @@ Each task should:
 
 ---
 
-#### Step 6 - Status Synchronization
+### Step 6 - Status Synchronization
 
 Ensure:
 
@@ -215,7 +215,7 @@ Add retry logic:
 
 ---
 
-#### Step 7 - Add Authentication
+### Step 7 - Add Authentication
 
 * JWT-based auth
 * Protect endpoints
@@ -223,7 +223,7 @@ Add retry logic:
 
 ---
 
-#### Step 8 - Add Caching Layer
+### Step 8 - Add Caching Layer
 
 Use Redis for:
 
@@ -232,7 +232,7 @@ Use Redis for:
 
 ---
 
-#### Step 9 - Add Observability
+### Step 9 - Add Observability
 
 * Logging (structured logs)
 * Add Flower for monitoring Celery tasks
@@ -240,7 +240,7 @@ Use Redis for:
 
 ---
 
-#### Step 10 - Dockerize the System
+### Step 10 - Dockerize the System
 
 Create services:
 
@@ -253,7 +253,7 @@ Use docker-compose to run everything together.
 
 ---
 
-#### Step 11 - Testing
+### Step 11 - Testing
 
 * Unit tests for services
 * Integration tests for API + queue
@@ -261,7 +261,7 @@ Use docker-compose to run everything together.
 
 ---
 
-#### Step 12 - Deployment
+### Step 12 - Deployment
 
 Deploy to a cloud platform:
 
@@ -275,7 +275,7 @@ Expose:
 
 ---
 
-### Recommended Folder Structure
+## Recommended Folder Structure
 
 Keep it modular and production-like:
 
@@ -324,7 +324,7 @@ Keep it modular and production-like:
 
 ---
 
-### What Makes This CV-Strong
+## Why I chose this Project
 
 This project signals:
 
@@ -335,7 +335,7 @@ This project signals:
 
 ---
 
-### Optional Enhancements (High Impact)
+## Optional Enhancements (High Impact)
 
 * Priority queues (high vs low jobs)
 * Scheduled jobs (Celery Beat)
