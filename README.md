@@ -44,6 +44,33 @@ celery -A app.workers.celery_app:celery_app worker --loglevel=info
 curl -X POST "http://127.0.0.1:8000/users/?username=alice&email=alice@example.com"
 ```
 
+## Current Implementation Status (April 16, 2026)
+
+Overall progress against the 12-step plan: about 45% complete.
+
+| Step | Status | Notes |
+| --- | --- | --- |
+| 1. Project setup | Completed | FastAPI app structure is in place and dependencies are installable. |
+| 2. Database design | In progress | Jobs and users models exist, but migrations are not implemented yet. |
+| 3. Basic FastAPI app | In progress | Health, create/get/start/retry/update job endpoints exist; job listing/pagination is still missing. |
+| 4. Integrate Celery | In progress | Celery broker and worker tasks are configured; user creation is queued asynchronously. |
+| 5. Worker logic | In progress | Core task functions are present, but execution flow and production-grade task orchestration are still minimal. |
+| 6. Status synchronization | In progress | Status updates and retry behavior exist in service logic; Celery signals/backoff are not implemented. |
+| 7. Authentication | Not started | JWT auth and protected routes are not implemented. |
+| 8. Caching layer | Not started | No Redis caching or rate limiting implemented yet. |
+| 9. Observability | Not started | Structured logging, metrics, and Flower setup are not implemented. |
+| 10. Dockerize system | Not started | Docker folder exists, but container definitions are not implemented yet. |
+| 11. Testing | In progress | A smoke test exists for user queue dispatch; broader unit/integration coverage is still needed. |
+| 12. Deployment | Not started | No deployment configuration/pipeline implemented yet. |
+
+### What is currently working
+
+* Job CRUD-like workflow for create, fetch, start, retry, and manual status update.
+* Celery task module and worker startup path.
+* Async queue dispatch from `POST /users/`.
+* Local startup flow for API + Redis + Celery worker.
+* Basic test coverage for queue dispatch.
+
 ## How I am building the project
 
 Below is a structured build plan for a **job processing platform** designed to demonstrate backend depth using Python. The emphasis is on clean architecture, asynchronous processing, and production-ready practices.
