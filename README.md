@@ -88,10 +88,20 @@ uvicorn app.main:app --reload
 celery -A app.workers.celery_app:celery_app worker --loglevel=info
 ```
 
-6. Queue a user creation task:
+6. Create a user locally:
 
 ```bash
-curl -X POST "http://127.0.0.1:8000/users/?username=alice&email=alice@example.com"
+curl -X POST "http://127.0.0.1:8000/users/" \
+  -H "Content-Type: application/json" \
+  -d "{\"username\":\"alice\",\"password\":\"secret123\",\"email\":\"alice@example.com\"}"
+```
+
+7. Log in with the same credentials:
+
+```bash
+curl -X POST "http://127.0.0.1:8000/login" \
+  -H "Content-Type: application/json" \
+  -d "{\"username\":\"alice\",\"password\":\"secret123\"}"
 ```
 
 ## Current Implementation Status (April 16, 2026)
@@ -103,10 +113,10 @@ Overall progress against the 12-step plan: about 45% complete.
 | 1. Project setup | Completed | FastAPI app structure is in place and dependencies are installable. |
 | 2. Database design | In progress | Jobs and users models exist, but migrations are not implemented yet. |
 | 3. Basic FastAPI app | In progress | Health, create/get/start/retry/update job endpoints exist; job listing/pagination is still missing. |
-| 4. Integrate Celery | In progress | Celery broker and worker tasks are configured; user creation is queued asynchronously. |
+| 4. Integrate Celery | In progress | Celery broker and worker tasks are configured for jobs; user creation is now handled locally. |
 | 5. Worker logic | In progress | Core task functions are present, but execution flow and production-grade task orchestration are still minimal. |
 | 6. Status synchronization | In progress | Status updates and retry behavior exist in service logic; Celery signals/backoff are not implemented. |
-| 7. Authentication | Not started | JWT auth and protected routes are not implemented. |
+| 7. Authentication | In progress | Local username/password creation and login are implemented; JWT auth and protected routes are not implemented yet. |
 | 8. Caching layer | Not started | No Redis caching or rate limiting implemented yet. |
 | 9. Observability | Not started | Structured logging, metrics, and Flower setup are not implemented. |
 | 10. Dockerize system | Not started | Docker folder exists, but container definitions are not implemented yet. |
@@ -117,7 +127,7 @@ Overall progress against the 12-step plan: about 45% complete.
 
 * Job CRUD-like workflow for create, fetch, start, retry, and manual status update.
 * Celery task module and worker startup path.
-* Async queue dispatch from `POST /users/`.
+* Local username/password user creation and login.
 * Local startup flow for API + Redis + Celery worker.
 * Basic test coverage for queue dispatch.
 
