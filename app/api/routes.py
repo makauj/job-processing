@@ -43,3 +43,10 @@ def update_job_status(job_id: int, status: str, db: Session = Depends(get_db)):
 
     job_service.update_job_status(db, job_id, parsed_status)
     return {"message": f"Job {job_id} status updated to {status}!"}
+
+@router.post("/users/", status_code=202)
+def create_user_route(username: str, email: str):
+    from app.workers.celery_app import celery_app
+
+    celery_app.send_task("app.workers.create_user", args=[username, email])
+    return {"message": f"User creation for {username} has been queued!"}

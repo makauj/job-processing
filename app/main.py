@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from app.api.routes import router
 from app.db.base import Base
 from app.db.session import engine
-from app.models import jobs  # noqa: F401
+from app.models import jobs, users  # noqa: F401
 
 app = FastAPI()
 
